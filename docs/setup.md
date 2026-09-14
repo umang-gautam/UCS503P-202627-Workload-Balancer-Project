@@ -1,17 +1,8 @@
 # Setup
 
-Everything lives under `code/`. You need a Supabase project with the tables
-from `code/backend/schema.sql`: paste the file into the Supabase SQL editor once.
-
-## Configure
-
-```sh
-cd code/backend
-cp .env.example .env
-# edit .env: SUPABASE_URL, SUPABASE_KEY
-```
-
-`.env` is git-ignored and docker-ignored. Keep it that way.
+Everything lives under `code/`. No accounts are needed: docker compose brings
+up a local Postgres with PostgREST in front of it, which speaks the same REST
+API as Supabase.
 
 ## Run everything with Docker
 
@@ -21,14 +12,43 @@ docker compose up --build
 ```
 
 - App: <http://localhost:8080>
-- API through the frontend proxy: <http://localhost:8080/api/health>
+- API through the frontend proxy: <http://localhost:8080/api/health>, Swagger at `/api/docs`
+- PostgREST directly: <http://localhost:3000>
+
+If `postgrest` exits on first start, an older `pgdata` volume is in the way: `docker compose down -v` and start again.
+
+The database starts empty. Click **Load demo data** on the Dashboard, or:
+
+```sh
+curl -X POST localhost:8080/api/demo/seed
+```
+
+That creates two students, three subjects with eight topics, deadlines and
+nineteen scores. It is idempotent. The endpoint exists only when `DEBUG=true`,
+which compose sets.
+
+## Using a real Supabase project instead
+
+Paste `code/backend/schema.sql` into the project's SQL editor once, then either
+export these before `docker compose up`, or put them in `code/backend/.env` for a
+bare uvicorn:
+
+```sh
+SUPABASE_URL=https://<project-ref>.supabase.co
+SUPABASE_REST_PATH=/rest/v1
+SUPABASE_KEY=<service-role or secret key>
+```
+
+`.env` is git-ignored and docker-ignored. Keep it that way.
 
 ## Run the pieces directly
 
-Backend, Python 3.10+:
+Backend, Python 3.10+. Keep `docker compose up db postgrest` running for the
+data, and copy `.env.example` to `.env` (its defaults point at that PostgREST):
 
 ```sh
 cd code/backend
+cp .env.example .env
 python -m venv venv && source venv/bin/activate     # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload                        # http://localhost:8000/docs

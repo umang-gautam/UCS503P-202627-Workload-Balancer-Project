@@ -26,11 +26,13 @@ Docs site: built from `docs/` and `journals/` on every push to `main`.
 ## Quick start
 
 ```sh
-cd code/backend && cp .env.example .env     # add SUPABASE_URL and SUPABASE_KEY
-cd .. && docker compose up --build          # http://localhost:8080
+cd code && docker compose up --build        # http://localhost:8080
 ```
 
-Without Docker, see [Setup](docs/setup.md). Tests run from the repo root with `pytest`.
+Then click **Load demo data** on the Dashboard. No accounts needed: compose runs a
+local Postgres with PostgREST as a Supabase stand-in. To use a real Supabase
+project, or to run without Docker, see [Setup](docs/setup.md). Tests run from the
+repo root with `pytest`.
 
 ## Team
 
