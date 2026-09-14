@@ -13,17 +13,33 @@ const BASE = (import.meta.env.VITE_API_BASE || '/api').replace(/\/$/, '');
 
 async function request(path, options = {}) {
   const url = `${BASE}${path}`;
-  const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-    ...options,
-  });
+  let res;
+  try {
+    res = await fetch(url, {
+      headers: { 'Content-Type': 'application/json', ...options.headers },
+      ...options,
+    });
+  } catch {
+    throw new Error('Cannot reach the backend. Is it running?');
+  }
 
   if (res.status === 204) return null; // DELETE returns no content
 
-  const data = await res.json();
+  // Parse JSON only when the server says it is JSON. A proxy error page or a
+  // plain-text 500 must become a readable message, not a JSON.parse crash.
+  const text = await res.text();
+  const isJson = (res.headers.get('content-type') || '').includes('application/json');
+  let data = null;
+  if (isJson && text) {
+    try { data = JSON.parse(text); } catch { data = null; }
+  }
 
   if (!res.ok) {
-    throw new Error(data.detail || data.message || `Request failed: ${res.status}`);
+    const detail = data && (data.detail ?? data.message);
+    const msg = detail == null
+      ? (text ? text.slice(0, 200) : `Request failed: ${res.status}`)
+      : typeof detail === 'string' ? detail : JSON.stringify(detail);
+    throw new Error(msg);
   }
 
   return data;
@@ -77,3 +93,6 @@ export const updateSession       = (id, body) => request(`/study-sessions/${id}`
 
 // ── Agent ───────────────────────────────────────────────────
 export const triggerRebalance = (body) => request('/agent/rebalance', { method: 'POST', body: JSON.stringify(body) });
+
+// ── Demo ────────────────────────────────────────────────────
+export const seedDemoData = () => request('/demo/seed', { method: 'POST' });
