@@ -84,8 +84,8 @@ export default function Students() {
               <Table head={['Name', 'Email', '']}>
                 {students.map((s) => (
                   <tr key={s.id} className={s.id === selectedId ? 'bg-brand-50' : ''}>
-                    <td className={`${td} font-medium text-gray-900`}>{s.name}</td>
-                    <td className={`${td} text-gray-600`}>{s.email}</td>
+                    <td className={`${td} font-medium text-fg`}>{s.name}</td>
+                    <td className={`${td} text-fg-muted`}>{s.email}</td>
                     <td className={`${td} text-right whitespace-nowrap`}>
                       {s.id !== selectedId && (
                         <Button variant="ghost" size="sm" onClick={() => setSelectedId(s.id)}>Select</Button>
@@ -115,11 +115,11 @@ export default function Students() {
 
           <Card title={selected ? `Enrolments · ${selected.name}` : 'Enrolments'}>
             {!selected ? (
-              <p className="text-sm text-gray-500">Select a student to manage enrolments.</p>
+              <p className="text-sm text-fg-subtle">Select a student to manage enrolments.</p>
             ) : subjects.length === 0 ? (
-              <p className="text-sm text-gray-500">No subjects exist yet. Create them under Subjects.</p>
+              <p className="text-sm text-fg-subtle">No subjects exist yet. Create them under Subjects.</p>
             ) : (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-edge">
                 {subjects.map((sub) => {
                   const on = enrollments.some((en) => en.subject_id === sub.id);
                   return (
@@ -127,14 +127,14 @@ export default function Students() {
                       <label className="flex items-center gap-3 text-sm">
                         <input
                           type="checkbox"
-                          className="h-4 w-4 rounded border-gray-300 text-brand-700 focus:ring-brand-600"
+                          className="h-4 w-4 rounded border-edge-strong text-brand-700 focus:ring-brand-600"
                           checked={on}
                           disabled={busySubject === sub.id}
                           onChange={() => toggle(sub)}
                         />
                         <span>
-                          <span className="font-medium text-gray-900">{sub.code}</span>
-                          <span className="ml-2 text-gray-600">{sub.name}</span>
+                          <span className="font-medium text-fg">{sub.code}</span>
+                          <span className="ml-2 text-fg-muted">{sub.name}</span>
                         </span>
                       </label>
                     </li>

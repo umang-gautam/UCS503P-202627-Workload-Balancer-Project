@@ -64,3 +64,9 @@
 - Wrote `components/ui.jsx`, a small kit (page header, card, button, inputs, table, badge, progress bar, alert, empty state) so every page uses the same pieces. Brand colours are in `tailwind.config.js`.
 - `context/StudentContext.jsx` holds the student list and selection for the whole app; the per-page dropdowns are gone.
 - Dashboard is four summary tiles and a priority queue table. Study plan is a generate form, a rebalance card, and one sessions table grouped by day with a segmented done/missed control.
+
+## Dark theme (Sept 14, late)
+
+- Every colour in the kit is now a semantic token (`surface`, `surface-2`, `edge`, `fg`, `fg-muted`, `brand`) backed by a CSS variable, so the dark theme is one block of variables under `.dark` in `index.css`. No page needed a `dark:` class; only the badge and alert tone maps in the kit did.
+- Toggle in the top bar, remembered in `localStorage`, OS preference as the default. Applied before the first paint so there is no flash. `color-scheme` is set too, so native date pickers and scrollbars follow.
+- In dark mode the maroon lifts to a lighter red so it still reads on near-black; buttons and the active nav marker use the same variable.

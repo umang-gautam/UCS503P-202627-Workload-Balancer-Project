@@ -68,10 +68,10 @@ export default function PerformanceEntry() {
             return (
               <tr key={t.topic_id}>
                 <td className={td}>
-                  <div className="font-medium text-gray-900">{t.topic_name}</div>
-                  <div className="text-xs text-gray-500">{t.subject_name}</div>
+                  <div className="font-medium text-fg">{t.topic_name}</div>
+                  <div className="text-xs text-fg-subtle">{t.subject_name}</div>
                 </td>
-                <td className={`${td} w-28 text-gray-700`}>{Math.round(t.mastery * 100)}%</td>
+                <td className={`${td} w-28 text-fg-muted`}>{Math.round(t.mastery * 100)}%</td>
                 <td className={`${td} w-36`}><Badge tone={band.tone}>{band.label} · {t.priority.toFixed(0)}</Badge></td>
                 <td className={`${td} w-44`}>
                   <Input
@@ -94,12 +94,12 @@ export default function PerformanceEntry() {
       </Card>
 
       <Card title={`History · ${history.length} record${history.length === 1 ? '' : 's'}`} padded={false}>
-        {history.length === 0 ? <p className="px-4 py-3 text-sm text-gray-500">No scores logged yet.</p> : (
+        {history.length === 0 ? <p className="px-4 py-3 text-sm text-fg-subtle">No scores logged yet.</p> : (
           <Table head={['Recorded', 'Topic', 'Score']}>
             {history.map((r) => (
               <tr key={r.id}>
-                <td className={`${td} w-52 whitespace-nowrap text-gray-600`}>{new Date(r.recorded_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</td>
-                <td className={`${td} text-gray-900`}>{topicName(r.topic_id)}</td>
+                <td className={`${td} w-52 whitespace-nowrap text-fg-muted`}>{new Date(r.recorded_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</td>
+                <td className={`${td} text-fg`}>{topicName(r.topic_id)}</td>
                 <td className={`${td} w-24`}><ScoreBadge score={r.score} /></td>
               </tr>
             ))}
