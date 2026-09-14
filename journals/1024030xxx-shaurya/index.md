@@ -356,3 +356,23 @@ Backend track. Picks up from Khushi's Phase 4 (schema designed, models pending).
 
 ### Next steps
 - Docs for the new layout are Khushi's and the frontend team's.
+
+---
+
+## 2026-09-14 — Phase 19: Readable failures and a demo dataset
+
+**Status:** Complete
+
+### What I did
+- Found the bug behind "JSON.parse: unexpected character": when the database host was unreachable, `httpx.ConnectError` escaped every handler and FastAPI answered a `text/plain` 500 that the frontend tried to parse as JSON. `main.py` now maps `httpx.RequestError` to a JSON 503 naming the host and the error class.
+- `services/demo_service.py` seeds two students, three subjects, eight topics, one assignment per topic with due dates 2 to 30 days out, and nineteen scores chosen so the Dashboard shows a real spread of priorities. It goes through the entity services like any caller and is idempotent.
+- `POST /demo/seed` exposes it, 403 unless `DEBUG=true`. Three tests: the 503 shape, the 403, and the seed route with the service patched.
+
+### Key decisions & reasoning
+- **Decision:** 503, not 500, and always JSON.
+  **Why:** 503 says "try later, it is not your request". JSON means the frontend's one error path handles it.
+- **Decision:** The seed lives behind `DEBUG`, not behind a separate secret.
+  **Why:** It only creates rows and only when the demo emails are absent. The flag is already off in any real deployment.
+
+### Next steps
+- Local data stack so the seed has somewhere to go on a fresh machine.

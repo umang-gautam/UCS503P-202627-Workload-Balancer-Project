@@ -12,7 +12,7 @@ Responsibilities (and nothing else):
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from httpx import HTTPStatusError
+from httpx import HTTPStatusError, RequestError
 
 from app.core.config import settings
 from app.api.routes import (
@@ -25,6 +25,7 @@ from app.api.routes import (
     study_plans,
     study_sessions,
     agent,
+    demo,
 )
 
 
@@ -52,6 +53,16 @@ def create_app() -> FastAPI:
             detail = exc.response.text
         return JSONResponse(status_code=status_code, content={"status": status_code, "message": detail})
 
+    # Network-level failures (DNS, refused, timeout) become a JSON 503 so the
+    # frontend gets a message it can show instead of a text/plain 500.
+    @app.exception_handler(RequestError)
+    async def upstream_unreachable_handler(request: Request, exc: RequestError):
+        host = exc.request.url.host if exc.request else "database"
+        return JSONResponse(
+            status_code=503,
+            content={"status": 503, "message": f"Database unreachable ({host}): {type(exc).__name__}"},
+        )
+
     @app.get("/health")
     async def health_check():
         """Liveness probe — 200 if the server is up."""
@@ -66,6 +77,7 @@ def create_app() -> FastAPI:
     app.include_router(study_plans.router, prefix="/study-plans", tags=["study-plans"])
     app.include_router(study_sessions.router, prefix="/study-sessions", tags=["study-sessions"])
     app.include_router(agent.router, prefix="/agent", tags=["agent"])
+    app.include_router(demo.router, prefix="/demo", tags=["demo"])
 
     return app
 
