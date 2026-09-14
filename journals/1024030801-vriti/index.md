@@ -113,3 +113,20 @@ Frontend track, working alongside Umang on the React app under `code/frontend`.
 
 ### Next
 - Link each Dashboard card to its topic on the study plan.
+
+---
+
+## 2026-09-14 — Students, Subjects and Scores on the new kit
+
+### What I did
+- New `pages/Students.jsx`: a students table, an add-student form, and an enrolments card with one checkbox per subject for the selected student. Until now enrolments could only be created by the demo seed.
+- `pages/Subjects.jsx` rewritten: one card per subject with a topics table, and deadlines listed and added under each topic. Deadlines are what the scoring engine reads for urgency, and they had no UI before.
+- `pages/PerformanceEntry.jsx` rewritten as two tables: log a score per topic (mastery and priority shown beside the input) and the history.
+- Updated `docs/frontend.md` for the new routes, kit and context.
+
+### Decisions
+- All three pages load their lists once (subjects, topics, assignments in one `Promise.all`) and group client-side, instead of a request per row.
+- Deletes confirm first and name what cascades.
+
+### Next
+- Keyboard focus order on the enrolments checklist.
