@@ -97,3 +97,19 @@ Frontend track, working alongside Umang on the React app under `code/frontend`.
 
 ### Next
 - Wire the Dashboard cards to link into the study plan for that topic.
+
+---
+
+## 2026-09-14 — Remembered student and a first-run empty state
+
+### What I did
+- `lib/selectedStudent.js` stores the selected student id in `localStorage`. All three student-scoped pages initialise from it and write back on change, so moving from Dashboard to Scores to Study Plan keeps the same student, and so does a reload.
+- `pickStudentId(list, current)` keeps the stored id if it is still in the list and otherwise falls back to the first student, which also removes the "nothing selected" state on first visit.
+- The Dashboard shows a "Nothing here yet" card with a **Load demo data** button when there are no students. It calls the backend's seed endpoint and reloads.
+
+### Decisions
+- `localStorage`, not a context provider. Three pages need one string; wiring a provider through the tree is more code than the feature.
+- The button lives only on the Dashboard, the landing page. Other pages just link back there through the nav.
+
+### Next
+- Link each Dashboard card to its topic on the study plan.

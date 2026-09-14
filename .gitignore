@@ -466,3 +466,5 @@ TSWLatexianTemp*
 # Uncomment the next line to have this generated file ignored.
 #*Notes.bib
  
+# Python template ignores lib/; the frontend has a real src/lib
+!code/frontend/src/lib/

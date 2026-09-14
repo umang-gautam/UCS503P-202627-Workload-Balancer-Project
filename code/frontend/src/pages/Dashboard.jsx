@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
-import { fetchStudents, fetchStudentScores } from '../api/client.js';
+import { fetchStudents, fetchStudentScores, seedDemoData } from '../api/client.js';
 import TopicCard from '../components/TopicCard.jsx';
+import { getStoredStudentId, storeStudentId, pickStudentId } from '../lib/selectedStudent.js';
 
 /**
  * Dashboard Page Component
  */
 export default function Dashboard() {
   const [students, setStudents] = useState([]);
-  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState(getStoredStudentId);
+  useEffect(() => { storeStudentId(selectedStudentId); }, [selectedStudentId]);
+  const [seeding, setSeeding] = useState(false);
+  const [seedError, setSeedError] = useState(null);
   const [scores, setScores] = useState([]);
 
   // Loading and error states
@@ -25,10 +29,7 @@ export default function Dashboard() {
       const list = Array.isArray(data) ? data : [];
       setStudents(list);
 
-      // Auto-select the first student if available and none currently selected
-      if (list.length > 0 && !selectedStudentId) {
-        setSelectedStudentId(list[0].id);
-      }
+      setSelectedStudentId((current) => pickStudentId(list, current));
     } catch (err) {
       setStudentsError(err.message || 'Failed to load students list.');
     } finally {
@@ -39,6 +40,19 @@ export default function Dashboard() {
   useEffect(() => {
     loadStudents();
   }, []);
+
+  const handleSeed = async () => {
+    setSeeding(true);
+    setSeedError(null);
+    try {
+      await seedDemoData();
+      await loadStudents();
+    } catch (err) {
+      setSeedError(err.message || 'Could not load demo data.');
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   // Fetch student scores whenever selected student changes
   const loadStudentScores = async (studentId) => {
@@ -192,7 +206,27 @@ export default function Dashboard() {
       </div>
 
       {/* ── Scored Topics Section ──────────────────────────────── */}
-      {!selectedStudentId ? (
+      {!loadingStudents && !studentsError && students.length === 0 ? (
+        <div className="bg-white rounded-xl border border-dashed border-indigo-300 p-12 text-center">
+          <div className="mx-auto w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 mb-3 text-xl font-bold">
+            ✨
+          </div>
+          <h3 className="text-base font-semibold text-gray-900 mb-1">Nothing here yet</h3>
+          <p className="text-sm text-gray-500 max-w-sm mx-auto mb-5">
+            Load a demo dataset: two students, three subjects with topics, deadlines and scores.
+            Or add subjects and students yourself.
+          </p>
+          <button
+            type="button"
+            onClick={handleSeed}
+            disabled={seeding}
+            className="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 transition"
+          >
+            {seeding ? 'Loading demo data…' : 'Load demo data'}
+          </button>
+          {seedError && <p className="text-sm text-red-600 mt-3">{seedError}</p>}
+        </div>
+      ) : !selectedStudentId ? (
         <div className="bg-white rounded-xl border border-dashed border-gray-300 p-12 text-center">
           <div className="mx-auto w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 mb-3 text-xl font-bold">
             👤
