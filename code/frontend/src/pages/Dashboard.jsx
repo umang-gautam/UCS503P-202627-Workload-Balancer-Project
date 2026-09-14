@@ -8,9 +8,9 @@ import { Alert, Button, Card, EmptyState, PageHeader, Spinner, Table } from '../
 function Stat({ label, value, hint }) {
   return (
     <Card>
-      <div className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="mt-1 text-2xl font-semibold text-gray-900">{value}</div>
-      {hint && <div className="mt-0.5 text-xs text-gray-500">{hint}</div>}
+      <div className="text-xs font-medium uppercase tracking-wide text-fg-subtle">{label}</div>
+      <div className="mt-1 text-2xl font-semibold text-fg">{value}</div>
+      {hint && <div className="mt-0.5 text-xs text-fg-subtle">{hint}</div>}
     </Card>
   );
 }
@@ -72,7 +72,7 @@ export default function Dashboard() {
         }
       >
         Load a demo dataset with two students, three subjects, deadlines and scores, or add students and subjects yourself.
-        {seedError && <span className="mt-2 block text-red-700">{seedError}</span>}
+        {seedError && <span className="mt-2 block text-red-700 dark:text-red-300">{seedError}</span>}
       </EmptyState>
     );
   } else if (loading) {

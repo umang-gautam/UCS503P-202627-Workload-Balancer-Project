@@ -46,7 +46,8 @@ The client never needs to know which of the three it is running under.
 - Every async action has its own loading and error state, keyed by id when the action is per-row. A failed request shows the backend's message verbatim next to the thing that failed.
 - Status changes are optimistic and revert on failure.
 - An empty database shows a **Load demo data** button on the Dashboard, which calls `POST /api/demo/seed`.
-- Styling is Tailwind utility classes through the kit in `components/ui.jsx`. Brand colours live in `tailwind.config.js` (`brand` maroon, `steel` blue, `page` gray). Pages do not invent their own buttons, cards or badges.
+- Styling is Tailwind utility classes through the kit in `components/ui.jsx`. Colours are semantic tokens (`surface`, `edge`, `fg`, `brand`) backed by CSS variables in `index.css`; pages never use raw gray or white classes.
+- Light and dark themes are a variable swap under a `dark` class on `<html>`. The toggle in the top bar remembers the choice; with no choice saved the OS preference wins. `?theme=dark` in the URL forces it, which is how screenshots are taken.
 
 ## Commands
 

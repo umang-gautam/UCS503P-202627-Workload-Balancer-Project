@@ -94,12 +94,12 @@ export default function StudyPlanView() {
               </Field>
               {genError && <Alert kind="error">{genError}</Alert>}
               <Button type="submit" disabled={generating} className="w-full">{generating ? 'Generating…' : 'Generate plan'}</Button>
-              <p className="text-xs text-gray-500">Time is split across topics in proportion to priority, in 30–60 minute sessions.</p>
+              <p className="text-xs text-fg-subtle">Time is split across topics in proportion to priority, in 30–60 minute sessions.</p>
             </form>
           </Card>
 
           <Card title="Rebalance">
-            <p className="mb-3 text-sm text-gray-600">Re-score every topic with the latest scores and deadlines and rebuild the remaining sessions.</p>
+            <p className="mb-3 text-sm text-fg-muted">Re-score every topic with the latest scores and deadlines and rebuild the remaining sessions.</p>
             <Button variant="secondary" onClick={runRebalance} disabled={rebalancing || plan.studentPlans.length === 0} className="w-full">
               {rebalancing ? 'Rebalancing…' : 'Run the agent'}
             </Button>
@@ -126,17 +126,17 @@ export default function StudyPlanView() {
               <div className="p-4"><EmptyState title="No plan yet">Generate one on the left. Topics need at least one enrolment and score or deadline to be scheduled.</EmptyState></div>
             ) : (
               <>
-                <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-2 text-xs text-gray-600">
+                <div className="flex items-center justify-between border-b border-edge bg-surface-2 px-4 py-2 text-xs text-fg-muted">
                   <span>{plan.sessions.length} sessions · {done} done</span>
                   <span>{plan.sessions.reduce((a, s) => a + s.duration_minutes, 0)} minutes total</span>
                 </div>
                 <Table head={['Topic', 'Duration', 'Status']}>
                   {byDate.map(([date, sessions]) => (
                     <Fragment key={date}>
-                      <tr className="bg-gray-50">
+                      <tr className="bg-surface-2">
                         <td colSpan={3} className="px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-brand-700">
                           {new Date(date).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' })}
-                          <span className="ml-2 font-normal normal-case tracking-normal text-gray-500">{sessions.reduce((a, x) => a + x.duration_minutes, 0)} min</span>
+                          <span className="ml-2 font-normal normal-case tracking-normal text-fg-subtle">{sessions.reduce((a, x) => a + x.duration_minutes, 0)} min</span>
                         </td>
                       </tr>
                       {sessions.map((x) => (

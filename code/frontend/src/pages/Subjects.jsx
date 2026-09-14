@@ -92,22 +92,22 @@ export default function Subjects() {
                 padded={false}
               >
                 {subjectTopics.length === 0 ? (
-                  <p className="px-4 py-3 text-sm text-gray-500">No topics yet.</p>
+                  <p className="px-4 py-3 text-sm text-fg-subtle">No topics yet.</p>
                 ) : (
                   <Table head={['Topic', 'Deadlines', '']}>
                     {subjectTopics.map((t) => {
                       const due = assignments.filter((a) => a.topic_id === t.id).sort((a, b) => a.due_date.localeCompare(b.due_date));
                       return (
                         <tr key={t.id}>
-                          <td className={`${td} w-56 font-medium text-gray-900`}>{t.name}</td>
+                          <td className={`${td} w-56 font-medium text-fg`}>{t.name}</td>
                           <td className={td}>
-                            {due.length === 0 && <span className="text-xs text-gray-400">None</span>}
+                            {due.length === 0 && <span className="text-xs text-fg-subtle">None</span>}
                             <ul className="space-y-1">
                               {due.map((a) => (
                                 <li key={a.id} className="flex items-center gap-2 text-xs">
-                                  <span className="text-gray-700">{a.title}</span>
-                                  <span className="text-gray-500">{formatDate(a.due_date)}</span>
-                                  <button type="button" onClick={() => run(() => deleteAssignment(a.id))} className="text-gray-400 hover:text-red-600" aria-label={`Remove ${a.title}`}>×</button>
+                                  <span className="text-fg-muted">{a.title}</span>
+                                  <span className="text-fg-subtle">{formatDate(a.due_date)}</span>
+                                  <button type="button" onClick={() => run(() => deleteAssignment(a.id))} className="text-fg-subtle hover:text-red-600 dark:hover:text-red-400" aria-label={`Remove ${a.title}`}>×</button>
                                 </li>
                               ))}
                             </ul>
@@ -121,7 +121,7 @@ export default function Subjects() {
                     })}
                   </Table>
                 )}
-                <form onSubmit={addTopic(s.id)} className="flex items-center gap-2 border-t border-gray-200 bg-gray-50 px-4 py-2.5">
+                <form onSubmit={addTopic(s.id)} className="flex items-center gap-2 border-t border-edge bg-surface-2 px-4 py-2.5">
                   <Input placeholder="New topic name" value={newTopic[s.id] || ''} onChange={(e) => setNewTopic({ ...newTopic, [s.id]: e.target.value })} className="!w-64 !py-1.5" />
                   <Button type="submit" size="sm" variant="secondary">Add topic</Button>
                 </form>

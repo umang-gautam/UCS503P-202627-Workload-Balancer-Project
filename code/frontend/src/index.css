@@ -3,6 +3,40 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --page: 244 245 247;
+    --surface: 255 255 255;
+    --surface-2: 249 250 251;
+    --surface-3: 243 244 246;
+    --edge: 229 231 235;
+    --edge-strong: 209 213 219;
+    --fg: 17 24 39;
+    --fg-muted: 75 85 99;
+    --fg-subtle: 107 114 128;
+    --brand-50: 251 241 241;
+    --brand-100: 245 220 220;
+    --brand-600: 161 18 18;
+    --brand-700: 139 0 0;
+    --brand-800: 109 0 0;
+    color-scheme: light;
+  }
+  .dark {
+    --page: 14 14 16;
+    --surface: 24 24 27;
+    --surface-2: 32 32 36;
+    --surface-3: 46 46 52;
+    --edge: 50 50 56;
+    --edge-strong: 74 74 82;
+    --fg: 244 244 245;
+    --fg-muted: 200 200 208;
+    --fg-subtle: 150 150 160;
+    --brand-50: 52 22 22;
+    --brand-100: 88 30 30;
+    --brand-600: 232 96 96;
+    --brand-700: 212 68 68;
+    --brand-800: 186 52 52;
+    color-scheme: dark;
+  }
   html { font-size: 14px; }
-  body { @apply bg-page text-gray-800 antialiased; }
+  body { @apply bg-page text-fg antialiased; }
 }
