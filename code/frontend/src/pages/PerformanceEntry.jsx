@@ -6,11 +6,13 @@ import {
   fetchPerformanceByStudent,
 } from '../api/client.js';
 import ScoreBadge from '../components/ScoreBadge.jsx';
+import { getStoredStudentId, storeStudentId, pickStudentId } from '../lib/selectedStudent.js';
 
 export default function PerformanceEntry() {
   // ── State ─────────────────────────────────────────────────────────────
   const [students, setStudents] = useState([]);
-  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState(getStoredStudentId);
+  useEffect(() => { storeStudentId(selectedStudentId); }, [selectedStudentId]);
 
   // Data for the selected student
   const [topics, setTopics] = useState([]);
@@ -37,7 +39,9 @@ export default function PerformanceEntry() {
       setStudentError(null);
       try {
         const data = await fetchStudents();
-        setStudents(data || []);
+        const list = data || [];
+        setStudents(list);
+        setSelectedStudentId((current) => pickStudentId(list, current));
       } catch (err) {
         setStudentError(err.message || 'Failed to load students.');
       } finally {

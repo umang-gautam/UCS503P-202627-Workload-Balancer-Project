@@ -8,6 +8,7 @@ import {
 } from '../api/client.js';
 import SessionBlock from '../components/SessionBlock.jsx';
 import useStudyPlan from '../hooks/useStudyPlan.js';
+import { getStoredStudentId, storeStudentId, pickStudentId } from '../lib/selectedStudent.js';
 
 /**
  * Returns today's date formatted as YYYY-MM-DD in local time.
@@ -45,7 +46,8 @@ function formatDateHeading(dateStr) {
 export default function StudyPlanView() {
   // ── Student selection state ──────────────────────────────────────────
   const [students, setStudents] = useState([]);
-  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState(getStoredStudentId);
+  useEffect(() => { storeStudentId(selectedStudentId); }, [selectedStudentId]);
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [studentsError, setStudentsError] = useState(null);
 
@@ -82,9 +84,7 @@ export default function StudyPlanView() {
       const data = await fetchStudents();
       const list = Array.isArray(data) ? data : [];
       setStudents(list);
-      if (list.length > 0 && !selectedStudentId) {
-        setSelectedStudentId(list[0].id);
-      }
+      setSelectedStudentId((current) => pickStudentId(list, current));
     } catch (err) {
       setStudentsError(err.message || 'Failed to load students list.');
     } finally {
