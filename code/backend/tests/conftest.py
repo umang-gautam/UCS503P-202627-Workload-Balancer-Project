@@ -5,6 +5,10 @@ The key fixture here is `client` — a FastAPI TestClient that lets us
 make HTTP requests to our app without starting a real server.
 """
 
+import os
+
+os.environ.setdefault("SUPABASE_URL", "http://supabase.invalid")
+
 import pytest
 from fastapi.testclient import TestClient
 
