@@ -246,3 +246,23 @@ Name: Khushi
 
 ---
 
+## 2026-09-14 — Phase 12: Backend runs against any PostgREST
+
+**Status:** Complete
+
+### What I did
+- `config.py` gained `SUPABASE_REST_PATH` (default `/rest/v1`) and made `SUPABASE_KEY` optional. `supabase_client.py` only sends the `apikey` and `Authorization` headers when a key is set.
+- With `SUPABASE_URL=http://localhost:3000` and an empty path and key, the exact same repositories work against a plain PostgREST container. Nothing above `core/` changed.
+- `.env.example` now shows both configurations. `conftest.py` sets a dummy `SUPABASE_URL` so `pytest` needs no environment at all.
+
+### Key decisions & reasoning
+- **Decision:** Make the REST path configurable instead of special-casing "localhost".
+  **Why:** Supabase mounts PostgREST at `/rest/v1`; a bare PostgREST serves at `/`. One string setting covers both and any future proxy.
+- **Decision:** No auth headers when the key is empty, rather than sending a placeholder.
+  **Why:** PostgREST rejects a `Bearer` token it cannot verify. Sending nothing means anonymous, which is what the local stack expects.
+
+### Next steps
+- Business rules in services, now that there is data to test them against.
+
+---
+
