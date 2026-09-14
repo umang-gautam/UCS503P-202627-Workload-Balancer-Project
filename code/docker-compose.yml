@@ -1,14 +1,50 @@
-# Full stack in two containers.
-#   cp backend/.env.example backend/.env      # fill in Supabase values
-#   docker compose up --build                 # frontend on http://localhost:8080
+# Full stack, no external accounts needed:
+#   docker compose up --build            # app on http://localhost:8080
+#   curl -X POST localhost:8080/api/demo/seed   # or click "Load demo data" in the app
+#
+# To use a real Supabase project instead, export SUPABASE_URL / SUPABASE_KEY /
+# SUPABASE_REST_PATH=/rest/v1 in your shell before `docker compose up`.
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: balancer
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./backend/db/postgrest-roles.sql:/docker-entrypoint-initdb.d/02-roles.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d balancer"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  postgrest:
+    image: postgrest/postgrest:v12.2.3
+    environment:
+      PGRST_DB_URI: postgres://postgres:postgres@db:5432/balancer
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: anon
+    ports:
+      - "3000:3000"          # lets a bare `uvicorn` on the host use the same data
+    depends_on:
+      db:
+        condition: service_healthy
+
   backend:
     build: ./backend
-    env_file: ./backend/.env
     environment:
+      SUPABASE_URL: ${SUPABASE_URL:-http://postgrest:3000}
+      SUPABASE_REST_PATH: ${SUPABASE_REST_PATH:-}
+      SUPABASE_KEY: ${SUPABASE_KEY:-}
+      DEBUG: "true"
       CORS_ORIGINS: http://localhost:8080,http://localhost:5173
     expose:
       - "8000"
+    depends_on:
+      - postgrest
 
   frontend:
     build: ./frontend
@@ -16,3 +52,6 @@ services:
       - "8080:80"
     depends_on:
       - backend
+
+volumes:
+  pgdata:

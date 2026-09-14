@@ -10,7 +10,7 @@ React (Vite / nginx)  ── /api ──►  FastAPI routes
                                        │
                                   repositories
                                        │ httpx
-                                  Supabase (PostgREST)
+                                  PostgREST: Supabase, or the local compose Postgres
 ```
 
 **One rule:** routes → services → repositories → database. No layer skips ahead.
@@ -77,6 +77,7 @@ is plain text listing the reason and the top three topics.
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/health` | Liveness |
+| POST | `/demo/seed` | Demo dataset, only when `DEBUG=true` |
 | CRUD | `/students`, `/subjects`, `/topics`, `/assignments`, `/enrollments`, `/study-plans`, `/study-sessions` | Resource management, plus `by-<parent>/{id}` lookups |
 | POST | `/performance/` | Log a score |
 | GET | `/students/{id}/scores` | Scored topics, highest priority first |
@@ -84,7 +85,7 @@ is plain text listing the reason and the top three topics.
 | PATCH | `/study-sessions/{id}` | Mark done/missed |
 | POST | `/agent/rebalance` | Run the agent |
 
-Interactive docs at `/docs` when the backend is running.
+Interactive docs at `/docs` when the backend is running. Network failures towards the database come back as a JSON `503 {"status", "message"}`, never a text 500.
 
 ## Frontend (`code/frontend/src`)
 
@@ -98,6 +99,6 @@ in the container nginx does the same, so the client never changes.
 
 - `code/backend/Dockerfile`: python 3.12-slim, non-root, healthcheck on `/health`.
 - `code/frontend/Dockerfile`: Node build stage, nginx serve stage with the `/api` proxy.
-- `code/docker-compose.yml`: both, frontend on 8080, backend internal only.
+- `code/docker-compose.yml`: Postgres + PostgREST (a local Supabase stand-in, schema from `schema.sql`), backend (internal), frontend on 8080. Export `SUPABASE_URL`/`SUPABASE_KEY`/`SUPABASE_REST_PATH` to point the same stack at a real project.
 - `.github/workflows/backend.yml`: pytest, image build, smoke test. `frontend.yml`: npm build, image build.
 - `.github/workflows/mkdocs.yml`: publishes this site on push to `main`.

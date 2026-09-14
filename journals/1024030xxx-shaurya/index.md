@@ -376,3 +376,24 @@ Backend track. Picks up from Khushi's Phase 4 (schema designed, models pending).
 
 ### Next steps
 - Local data stack so the seed has somewhere to go on a fresh machine.
+
+---
+
+## 2026-09-14 — Phase 20: Local Postgres + PostgREST in compose
+
+**Status:** Complete
+
+### What I did
+- The Supabase project in the team's `.env` no longer resolves (NXDOMAIN on public DNS), so nothing could be demonstrated. `docker compose up` now brings up `db` (Postgres 16, initialised from `schema.sql` plus a roles file) and `postgrest` (PostgREST 12 with an `anon` role), and points the backend at it. `SUPABASE_URL`, `SUPABASE_KEY` and `SUPABASE_REST_PATH` can be exported to use a real project with the same file.
+- `db/postgrest-roles.sql` creates `anon` and grants it the tables. It is applied only by the compose Postgres; Supabase provisions those roles itself.
+- PostgREST is published on 3000 so a bare `uvicorn` on the host can share the data.
+- Verified end to end through nginx on 8080: seed, scores, plan generation, a missed-session rebalance. Updated setup, architecture and README.
+
+### Key decisions & reasoning
+- **Decision:** PostgREST, not a rewrite to SQLAlchemy.
+  **Why:** The repositories already speak PostgREST. Zero application code changed; only the URL.
+- **Decision:** A stale `pgdata` volume from an older compose broke the first start (no `postgres` role). Documented `docker compose down -v` in setup rather than adding migration logic.
+  **Why:** Dev volumes are disposable. Code that tries to repair them is code that hides the real state.
+
+### Next steps
+- Deployment targets from the blueprint, now that the stack is self-contained.
