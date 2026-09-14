@@ -1,5 +1,8 @@
-/* Tailwind base layers — these three directives pull in Tailwind's
-   reset, component classes, and utility classes respectively. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html { font-size: 14px; }
+  body { @apply bg-page text-gray-800 antialiased; }
+}

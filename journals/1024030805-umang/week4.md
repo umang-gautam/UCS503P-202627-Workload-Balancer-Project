@@ -57,3 +57,10 @@
 - Fixed the "JSON.parse: unexpected character" crash. `request()` in `api/client.js` now reads the body as text and parses JSON only when the response says it is JSON. Anything else, a proxy error page or a text 500, becomes the error message. A network failure says "Cannot reach the backend".
 - Nav links now highlight the active page, the bar is sticky, and there is a footer with a link to the API docs.
 - Added `seedDemoData()` to the client for the Dashboard's empty state.
+
+## Redesign on the institute LMS look (Sept 14, late)
+
+- Rebuilt the shell to match lms.thapar.edu: white top bar with the TIET logo and a student switcher, a left navigation drawer with a maroon active marker, light-gray content area, Poppins. On phones the drawer becomes a bottom tab bar.
+- Wrote `components/ui.jsx`, a small kit (page header, card, button, inputs, table, badge, progress bar, alert, empty state) so every page uses the same pieces. Brand colours are in `tailwind.config.js`.
+- `context/StudentContext.jsx` holds the student list and selection for the whole app; the per-page dropdowns are gone.
+- Dashboard is four summary tiles and a priority queue table. Study plan is a generate form, a rebalance card, and one sessions table grouped by day with a segmented done/missed control.
