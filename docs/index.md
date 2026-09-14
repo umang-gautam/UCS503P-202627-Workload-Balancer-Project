@@ -40,7 +40,7 @@ database. This is enforced by a test, not a convention.
 | Backend API | CRUD for all eight entities, scores, plan generation, agent endpoint. 71 tests. |
 | Scoring and planning | Done, pure functions, unit tested |
 | Agent | Deterministic LangGraph graph, four triggers, import boundary enforced by test |
-| Frontend | Four pages wired to the API, shared components, plan hook |
-| Containers and CI | Backend and frontend images, compose, two path-filtered workflows |
+| Frontend | Four pages wired to the API, shared components, plan hook, one-click demo data |
+| Containers and CI | Backend and frontend images, compose with a local Postgres + PostgREST stand-in for Supabase, two path-filtered workflows |
 | Deployment | Not started. Blueprint targets Render or Railway for the backend, Vercel for the frontend. |
 | Prototype and final reports | Not started |

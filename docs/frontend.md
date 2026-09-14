@@ -17,7 +17,8 @@ React 19, Vite 6, Tailwind 3, react-router 7. Lives in `code/frontend`.
 - `components/ScoreBadge.jsx`: a score pill. Green at 80+, yellow at 50+, red below.
 - `components/SessionBlock.jsx`: one study session with its pending / done / missed toggle.
 - `hooks/useStudyPlan.js`: plans, selected plan, sessions and the optimistic status update for a student.
-- `api/client.js`: the only place `fetch` is called. One function per endpoint.
+- `api/client.js`: the only place `fetch` is called. One function per endpoint. Non-JSON responses (proxy error pages, text 500s) become readable error messages instead of a `JSON.parse` crash.
+- `lib/selectedStudent.js`: the selected student is remembered in `localStorage`, so switching pages or reloading keeps it.
 
 ## Talking to the backend
 
@@ -34,6 +35,7 @@ The client never needs to know which of the three it is running under.
 - Pages own their state with `useState` and `useEffect`. No global store; nothing is shared across pages except the selected student, which each page asks for.
 - Every async action has its own loading and error state, keyed by id when the action is per-row. A failed request shows the backend's message verbatim next to the thing that failed.
 - Status changes are optimistic and revert on failure.
+- An empty database shows a **Load demo data** button on the Dashboard, which calls `POST /api/demo/seed`.
 - Styling is Tailwind utility classes in JSX. No CSS files besides `index.css` with the three Tailwind directives.
 
 ## Commands

@@ -51,3 +51,9 @@
 - Deploy: backend to Render, frontend to Vercel with `VITE_API_BASE` set.
 - Link Dashboard cards to the study plan for that topic.
 - Prototype-stage report.
+
+## Error handling and shell (Sept 14, evening)
+
+- Fixed the "JSON.parse: unexpected character" crash. `request()` in `api/client.js` now reads the body as text and parses JSON only when the response says it is JSON. Anything else, a proxy error page or a text 500, becomes the error message. A network failure says "Cannot reach the backend".
+- Nav links now highlight the active page, the bar is sticky, and there is a footer with a link to the API docs.
+- Added `seedDemoData()` to the client for the Dashboard's empty state.
