@@ -29,7 +29,8 @@ Docs site: built from `docs/` and `journals/` on every push to `main`.
 cd code && docker compose up --build        # http://localhost:8080
 ```
 
-Then click **Load demo data** on the Dashboard. No accounts needed: compose runs a
+The database auto-seeds real TIET college data on startup when empty (or click
+**Load college data** on the Dashboard). No accounts needed: compose runs a
 local Postgres with PostgREST as a Supabase stand-in. To use a real Supabase
 project, or to run without Docker, see [Setup](docs/setup.md). Tests run from the
 repo root with `pytest`.

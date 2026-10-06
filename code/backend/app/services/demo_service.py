@@ -1,12 +1,24 @@
 """
-Demo seed: a small, realistic dataset so the app has something to show.
+College demo seed: authentic TIET curriculum and student dataset.
 
-Goes through the entity services like any other caller. Idempotent: if the
-demo students already exist, nothing is written.
+Supports multiple branches via app.data.curriculum_catalog.
+Currently seeds B.E. (COE - Computer Engineering) with official syllabus units,
+assignments, deadlines, and multi-tier student performance evaluations.
+
+Goes through the entity services like any other caller. Fully idempotent.
 """
 
+import asyncio
 from datetime import date, timedelta
+import logging
 
+from app.data.curriculum_catalog import (
+    BRANCH_REGISTRY,
+    get_all_courses,
+    get_all_students,
+    get_available_branches,
+    get_branch_data,
+)
 from app.services import (
     assignment_service,
     enrollment_service,
@@ -16,60 +28,145 @@ from app.services import (
     topic_service,
 )
 
-DEMO_STUDENTS = [
-    {"name": "Asha Verma", "email": "asha.demo@workload.local"},
-    {"name": "Rohan Mehta", "email": "rohan.demo@workload.local"},
-]
+logger = logging.getLogger("app.services.demo_service")
 
-# subject -> topics -> (assignment due in N days, scores for Asha, scores for Rohan)
-DEMO_CURRICULUM = {
-    ("UCS503", "Software Engineering"): {
-        "Requirements & Use Cases": (3, [82, 88], [55]),
-        "UML & Design Patterns": (10, [64], [40, 48]),
-        "Testing Strategies": (21, [], [70]),
-    },
-    ("UCS301", "Data Structures"): {
-        "Linked Lists": (5, [45, 52], [90, 94]),
-        "Trees & Graphs": (2, [38], [61]),
-        "Hashing": (30, [75, 80], []),
-    },
-    ("UMA101", "Linear Algebra"): {
-        "Eigenvalues": (7, [58], [72, 68]),
-        "Matrix Decomposition": (14, [], [35]),
-    },
-}
+# Backwards compatibility exports
+DEMO_STUDENTS = get_all_students("COE")
+COLLEGE_STUDENTS = DEMO_STUDENTS
 
 
-async def seed(today: date | None = None) -> dict:
+async def seed(
+    today: date | None = None,
+    reset: bool = False,
+    branch_code: str = "COE",
+) -> dict:
+    """
+    Seed authentic TIET college students, subjects, topics, assignments and performance scores.
+
+    If reset=True, existing college students and their related records are cleared first.
+    Otherwise, if college data already exists, the function safely returns early.
+    """
     today = today or date.today()
-    existing = await student_service.get_students()
-    if any(s["email"] == DEMO_STUDENTS[0]["email"] for s in existing):
-        return {"seeded": False, "message": "Demo data already present."}
+    branch_data = get_branch_data(branch_code)
+    branch_students = branch_data["students"]
+    branch_courses = branch_data["courses"]
 
-    students = [await student_service.create_student(s) for s in DEMO_STUDENTS]
-    counts = {"students": len(students), "subjects": 0, "topics": 0,
-              "enrollments": 0, "assignments": 0, "performance_records": 0}
+    existing_students = await student_service.get_students()
+    existing_emails = {s["email"]: s for s in existing_students}
+    target_emails = {s["email"] for s in branch_students}
 
-    for (code, name), topics in DEMO_CURRICULUM.items():
-        subject = await subject_service.create_subject({"code": code, "name": name})
-        counts["subjects"] += 1
-        for student in students:
-            await enrollment_service.create_enrollment(
-                {"student_id": student["id"], "subject_id": subject["id"]})
-            counts["enrollments"] += 1
-        for topic_name, (due_in, asha_scores, rohan_scores) in topics.items():
-            topic = await topic_service.create_topic({"subject_id": subject["id"], "name": topic_name})
-            counts["topics"] += 1
+    if reset:
+        logger.info("Resetting existing students for branch %s...", branch_code)
+        for s in existing_students:
+            if s["email"] in target_emails:
+                await student_service.delete_student(s["id"])
+        existing_students = await student_service.get_students()
+        existing_emails = {s["email"]: s for s in existing_students}
+    elif any(email in existing_emails for email in target_emails):
+        return {
+            "seeded": False,
+            "message": f"Real college data for {branch_code} already present.",
+            "branch": branch_code,
+        }
+
+    # 1. Create or load students
+    students_by_email = {}
+    students_created = 0
+    for s_data in branch_students:
+        email = s_data["email"]
+        if email in existing_emails:
+            students_by_email[email] = existing_emails[email]
+        else:
+            created = await student_service.create_student({
+                "name": s_data["name"],
+                "email": email,
+            })
+            students_by_email[email] = created
+            students_created += 1
+
+    counts = {
+        "branch": branch_code,
+        "students": len(branch_students),
+        "students_created": students_created,
+        "subjects": 0,
+        "topics": 0,
+        "enrollments": 0,
+        "assignments": 0,
+        "performance_records": 0,
+    }
+
+    # 2. Cache existing subjects
+    existing_subjects = await subject_service.get_subjects()
+    subject_by_code = {s["code"]: s for s in existing_subjects}
+
+    # 3. Create subjects & topics from the branch curriculum
+    for course in branch_courses:
+        code = course["code"]
+        name = course["name"]
+
+        if code in subject_by_code:
+            subject = subject_by_code[code]
+        else:
+            subject = await subject_service.create_subject({"code": code, "name": name})
+            subject_by_code[code] = subject
+            counts["subjects"] += 1
+
+        # Enroll all students in this subject if not already enrolled
+        for student in students_by_email.values():
+            existing_enrollments = await enrollment_service.get_enrollments_by_student(student["id"])
+            enrolled_subject_ids = {e["subject_id"] for e in existing_enrollments}
+            if subject["id"] not in enrolled_subject_ids:
+                await enrollment_service.create_enrollment({
+                    "student_id": student["id"],
+                    "subject_id": subject["id"],
+                })
+                counts["enrollments"] += 1
+
+        # Cache existing topics for this subject
+        existing_topics = await topic_service.get_topics_by_subject(subject["id"])
+        topic_by_name = {t["name"]: t for t in existing_topics}
+
+        for topic_info in course.get("topics", []):
+            topic_name = topic_info["name"]
+            if topic_name in topic_by_name:
+                topic = topic_by_name[topic_name]
+            else:
+                topic = await topic_service.create_topic({
+                    "subject_id": subject["id"],
+                    "name": topic_name,
+                })
+                topic_by_name[topic_name] = topic
+                counts["topics"] += 1
+
+            due_days = topic_info.get("due_days", 14)
+            assignment_title = topic_info.get("assignment", f"{topic_name} assignment")
             await assignment_service.create_assignment({
                 "topic_id": topic["id"],
-                "title": f"{topic_name} assignment",
-                "due_date": (today + timedelta(days=due_in)).isoformat(),
+                "title": assignment_title,
+                "due_date": (today + timedelta(days=due_days)).isoformat(),
             })
             counts["assignments"] += 1
-            for student, scores in zip(students, (asha_scores, rohan_scores)):
+
+            scores_map = topic_info.get("scores", {})
+            for email, scores in scores_map.items():
+                student = students_by_email.get(email)
+                if not student:
+                    continue
                 for score in scores:
-                    await performance_service.create_performance_record(
-                        {"student_id": student["id"], "topic_id": topic["id"], "score": score})
+                    await performance_service.create_performance_record({
+                        "student_id": student["id"],
+                        "topic_id": topic["id"],
+                        "score": score,
+                    })
                     counts["performance_records"] += 1
 
-    return {"seeded": True, "message": "Demo data created.", **counts}
+    return {
+        "seeded": True,
+        "message": f"Real TIET {branch_code} college data created.",
+        **counts,
+    }
+
+
+if __name__ == "__main__":
+    result = asyncio.run(seed())
+    print("Seed result:", result)

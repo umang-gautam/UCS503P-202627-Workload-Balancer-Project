@@ -8,6 +8,7 @@ make HTTP requests to our app without starting a real server.
 import os
 
 os.environ.setdefault("SUPABASE_URL", "http://supabase.invalid")
+os.environ.setdefault("AUTO_SEED", "false")
 
 import pytest
 from fastapi.testclient import TestClient

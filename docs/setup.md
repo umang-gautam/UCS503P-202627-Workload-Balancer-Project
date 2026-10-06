@@ -17,15 +17,13 @@ docker compose up --build
 
 If `postgrest` exits on first start, an older `pgdata` volume is in the way: `docker compose down -v` and start again.
 
-The database starts empty. Click **Load demo data** on the Dashboard, or:
+With `AUTO_SEED=true` (the default in compose and `.env.example`), the backend automatically seeds the authentic TIET college dataset on startup whenever the database is empty. You can also re-seed or trigger it manually from the Dashboard, via CLI (`python seed.py` or `python seed.py --reset`), or via curl:
 
 ```sh
 curl -X POST localhost:8080/api/demo/seed
 ```
 
-That creates two students, three subjects with eight topics, deadlines and
-nineteen scores. It is idempotent. The endpoint exists only when `DEBUG=true`,
-which compose sets.
+That creates four TIET students (Umang, Vriti, Khushi, Shaurya), five core curriculum subjects (UCS503 Software Engineering, UCS301 DSA, UCS303 OS, UCS505 Computer Networks, UCS310 DBMS), seventeen topics with upcoming deadlines, and realistic student performance scores. It is fully idempotent. The endpoint exists only when `DEBUG=true`, which compose sets.
 
 ## Using a real Supabase project instead
 

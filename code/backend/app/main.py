@@ -7,7 +7,12 @@ Responsibilities (and nothing else):
   - Mount all route modules
   - Expose a /health endpoint for liveness checks
   - Register a global exception handler for consistent error responses
+  - Auto-seed real college data on startup if the database is empty
 """
+
+import asyncio
+from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,11 +33,46 @@ from app.api.routes import (
     demo,
 )
 
+logger = logging.getLogger("app.main")
+
+
+async def auto_seed_if_needed():
+    """Attempt to seed real college data if the database is currently empty."""
+    if settings.supabase_url.endswith(".invalid") or not settings.auto_seed:
+        return
+
+    for attempt in range(1, 6):
+        try:
+            from app.services import demo_service, student_service
+            existing = await student_service.get_students()
+            if not existing:
+                logger.info("Auto-seed: Database has no students. Seeding real college data...")
+                result = await demo_service.seed()
+                logger.info("Auto-seed finished: %s", result.get("message", "Success"))
+            else:
+                logger.info("Auto-seed: Database already populated with %d student(s).", len(existing))
+            break
+        except Exception as exc:
+            logger.warning("Auto-seed attempt %d/5 failed: %s. Retrying in 2s...", attempt, exc)
+            await asyncio.sleep(2)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if settings.auto_seed and not settings.supabase_url.endswith(".invalid"):
+        asyncio.create_task(auto_seed_if_needed())
+    yield
+
 
 def create_app() -> FastAPI:
     """Application factory — builds and returns a configured FastAPI app."""
 
-    app = FastAPI(title=settings.app_name, docs_url="/docs", redoc_url="/redoc")
+    app = FastAPI(
+        title=settings.app_name,
+        docs_url="/docs",
+        redoc_url="/redoc",
+        lifespan=lifespan,
+    )
 
     app.add_middleware(
         CORSMiddleware,

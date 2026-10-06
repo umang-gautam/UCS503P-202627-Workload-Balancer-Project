@@ -6,7 +6,11 @@ Every setting is declared once here with its type — if a required value
 is missing, the app will refuse to start with a clear error message.
 """
 
+from pathlib import Path
 from pydantic_settings import BaseSettings
+
+_BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
+_ENV_FILE = _BACKEND_DIR / ".env"
 
 
 class Settings(BaseSettings):
@@ -22,11 +26,16 @@ class Settings(BaseSettings):
     # ── Application ───────────────────────────────────────────
     app_name: str = "Workload Balancer API"
     debug: bool = False               # also enables POST /demo/seed
+    auto_seed: bool = True            # auto-populate college data on startup if database is empty
 
     # ── CORS ──────────────────────────────────────────────────
     cors_origins: str = "http://localhost:5173"
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {
+        "env_file": (_ENV_FILE if _ENV_FILE.exists() else ".env"),
+        "env_file_encoding": "utf-8",
+        "extra": "ignore",
+    }
 
     @property
     def cors_origin_list(self) -> list[str]:
