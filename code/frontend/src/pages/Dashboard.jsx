@@ -66,12 +66,12 @@ export default function Dashboard() {
         title="No students yet"
         action={
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <Button onClick={seed} disabled={seeding}>{seeding ? 'Loading demo data…' : 'Load demo data'}</Button>
+            <Button onClick={seed} disabled={seeding}>{seeding ? 'Loading college data…' : 'Load college data'}</Button>
             <Link to="/students"><Button variant="secondary">Add a student</Button></Link>
           </div>
         }
       >
-        Load a demo dataset with two students, three subjects, deadlines and scores, or add students and subjects yourself.
+        Load authentic TIET college dataset with student profiles, core departmental subjects, deadlines and scores, or add students and subjects yourself.
         {seedError && <span className="mt-2 block text-red-700 dark:text-red-300">{seedError}</span>}
       </EmptyState>
     );

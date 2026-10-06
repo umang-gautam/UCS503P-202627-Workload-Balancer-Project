@@ -38,6 +38,11 @@ export default function Subjects() {
   const [form, setForm] = useState({ code: '', name: '' });
   const [creating, setCreating] = useState(false);
   const [newTopic, setNewTopic] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const filteredSubjects = subjects.filter((s) =>
+    s.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const load = async () => {
     setLoading(true);
@@ -80,9 +85,19 @@ export default function Subjects() {
       {error && <Alert kind="error" onRetry={load} className="mb-4">{error}</Alert>}
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
+          {subjects.length > 0 && (
+            <div className="mb-2">
+              <Input
+                placeholder="Search subjects by code or name (e.g. UCS503, Operating System)..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="!py-2 w-full"
+              />
+            </div>
+          )}
           {loading ? <Spinner /> : subjects.length === 0 ? (
             <EmptyState title="No subjects yet">Create the first one with the form.</EmptyState>
-          ) : subjects.map((s) => {
+          ) : filteredSubjects.map((s) => {
             const subjectTopics = topics.filter((t) => t.subject_id === s.id);
             return (
               <Card
