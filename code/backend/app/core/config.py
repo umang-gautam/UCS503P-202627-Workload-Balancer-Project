@@ -28,6 +28,18 @@ class Settings(BaseSettings):
     debug: bool = False               # also enables POST /demo/seed
     auto_seed: bool = True            # auto-populate college data on startup if database is empty
 
+    # ── Email / SMTP (notifications) ──────────────────────────
+    # SMTP_HOST empty = email disabled (sending becomes a no-op).
+    # Mailpit (local): host=mailpit port=1025 tls=false.
+    # Gmail/Brevo: host=smtp.gmail.com/smtp-relay.brevo.com port=587 tls=true + user/pass.
+    smtp_host: str = ""
+    smtp_port: int = 1025
+    smtp_user: str = ""
+    smtp_pass: str = ""
+    smtp_from: str = "Workload Balancer <no-reply@workload.local>"
+    smtp_tls: bool = False
+    reminder_horizon_days: int = 7
+
     # ── CORS ──────────────────────────────────────────────────
     cors_origins: str = "http://localhost:5173"
 
@@ -36,6 +48,10 @@ class Settings(BaseSettings):
         "env_file_encoding": "utf-8",
         "extra": "ignore",
     }
+
+    @property
+    def email_enabled(self) -> bool:
+        return bool(self.smtp_host)
 
     @property
     def cors_origin_list(self) -> list[str]:

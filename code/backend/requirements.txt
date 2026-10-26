@@ -13,3 +13,6 @@ pytest-asyncio>=0.24.0
 # Agent (Phase 6)
 langgraph>=0.2.0
 langchain-core>=0.3.0
+
+# Email notifications
+aiosmtplib>=3.0.0
