@@ -96,3 +96,6 @@ export const triggerRebalance = (body) => request('/agent/rebalance', { method: 
 
 // ── Demo ────────────────────────────────────────────────────
 export const seedDemoData = () => request('/demo/seed', { method: 'POST' });
+
+// ── Notifications ────────────────────────────
+export const sendStudyReminders = (studentId) => request(`/notifications/reminders/${studentId}`, { method: 'POST' });

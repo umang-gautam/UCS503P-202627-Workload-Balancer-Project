@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import { fetchPlansByStudent, fetchTopics, generatePlan, triggerRebalance } from '../api/client.js';
+import { fetchPlansByStudent, fetchTopics, generatePlan, sendStudyReminders, triggerRebalance } from '../api/client.js';
 import { useStudents } from '../context/StudentContext.jsx';
 import useStudyPlan from '../hooks/useStudyPlan.js';
 import SessionBlock from '../components/SessionBlock.jsx';
@@ -16,11 +16,13 @@ export default function StudyPlanView() {
   const [genError, setGenError] = useState(null);
   const [rebalancing, setRebalancing] = useState(false);
   const [rebalance, setRebalance] = useState(null); // { text, changesNeeded } | { error }
+  const [reminding, setReminding] = useState(false);
+  const [reminder, setReminder] = useState(null); // { ok, text } | { error }
 
   useEffect(() => {
     fetchTopics().then((t) => setTopicMap(Object.fromEntries((t || []).map((x) => [x.id, x.name])))).catch(() => {});
   }, []);
-  useEffect(() => { setRebalance(null); setGenError(null); }, [selectedId]);
+  useEffect(() => { setRebalance(null); setGenError(null); setReminder(null); }, [selectedId]);
 
   const absorb = (result) => {
     if (Array.isArray(result?.topic_scores)) {
@@ -58,6 +60,20 @@ export default function StudyPlanView() {
       setRebalance({ error: err.message });
     } finally {
       setRebalancing(false);
+    }
+  };
+
+  const sendReminders = async () => {
+    setReminding(true);
+    setReminder(null);
+    try {
+      const r = await sendStudyReminders(selectedId);
+      const where = r.sent ? `emailed to ${r.email}` : 'not sent (email disabled on the server)';
+      setReminder({ ok: r.sent, text: `${r.sessions} session(s) and ${r.deadlines} deadline(s) ${where}.` });
+    } catch (err) {
+      setReminder({ error: err.message });
+    } finally {
+      setReminding(false);
     }
   };
 
@@ -105,6 +121,15 @@ export default function StudyPlanView() {
             </Button>
             {rebalance?.error && <Alert kind="error" className="mt-3">{rebalance.error}</Alert>}
             {rebalance?.text && <Alert kind={rebalance.changesNeeded ? 'info' : 'success'} className="mt-3 font-mono text-xs">{rebalance.text}</Alert>}
+          </Card>
+
+          <Card title="Reminders">
+            <p className="mb-3 text-sm text-fg-muted">Email this student their upcoming sessions and deadlines.</p>
+            <Button variant="secondary" onClick={sendReminders} disabled={reminding || !selectedId} className="w-full">
+              {reminding ? 'Sending…' : 'Email reminders'}
+            </Button>
+            {reminder?.error && <Alert kind="error" className="mt-3">{reminder.error}</Alert>}
+            {reminder?.text && <Alert kind={reminder.ok ? 'success' : 'info'} className="mt-3 text-xs">{reminder.text}</Alert>}
           </Card>
         </div>
 
