@@ -94,7 +94,17 @@ export default function Dashboard() {
           <Stat label="Average mastery" value={`${avgMastery}%`} />
           <Stat label="Average urgency" value={`${avgUrgency}%`} />
         </div>
-        <Card title="Priority queue" padded={false}>
+        <Card
+          title="Priority queue"
+          actions={
+            <div className="flex items-center gap-3 text-xs text-fg-muted">
+              <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-red-600" />Urgent</span>
+              <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-500" />Moderate</span>
+              <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-green-600" />On track</span>
+            </div>
+          }
+          padded={false}
+        >
           <Table head={['#', 'Topic', 'Priority', 'Mastery', 'Urgency']}>
             {scores.map((t, i) => <TopicRow key={t.topic_id} topic={t} rank={i + 1} />)}
           </Table>

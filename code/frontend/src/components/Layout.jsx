@@ -69,7 +69,7 @@ export default function Layout({ children }) {
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 border-b border-edge bg-surface">
         <div className="flex h-14 items-center justify-between gap-4 px-4">
-          <NavLink to="/" className="flex items-center gap-3">
+          <NavLink to="/" aria-label="Workload Balancer home" className="flex items-center gap-3">
             <img src="/tiet-logo.svg" alt="TIET" className="h-8 w-8" />
             <span className="leading-tight">
               <span className="block text-base font-semibold text-brand-700">Workload Balancer</span>
@@ -105,7 +105,7 @@ export default function Layout({ children }) {
             ))}
           </nav>
           <div className="absolute inset-x-0 bottom-0 border-t border-edge px-4 py-3 text-[11px] text-fg-subtle">
-            <a href="/api/docs" className="hover:text-brand-700">API documentation</a>
+            <a href="/api/docs" className="hover:text-brand-700" title="Open the interactive API documentation">API documentation</a>
           </div>
         </aside>
 
