@@ -31,6 +31,7 @@ from app.api.routes import (
     study_sessions,
     agent,
     demo,
+    notifications,
 )
 
 logger = logging.getLogger("app.main")
@@ -118,6 +119,7 @@ def create_app() -> FastAPI:
     app.include_router(study_sessions.router, prefix="/study-sessions", tags=["study-sessions"])
     app.include_router(agent.router, prefix="/agent", tags=["agent"])
     app.include_router(demo.router, prefix="/demo", tags=["demo"])
+    app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
 
     return app
 
