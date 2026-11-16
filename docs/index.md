@@ -5,7 +5,7 @@
 
 # AI-Powered Student Workload Balancer
 
-**Team**: Umang (1024030805), Vriti (1024030801), Khushi (1024030809), Shaurya (1024030xxx)
+**Team**: Umang (1024030805), Vriti (1024030801), Khushi (1024030809), Shaurya (1024030800)
 
 ## The problem
 
@@ -30,7 +30,7 @@ database. This is enforced by a test, not a convention.
 - [Setup](setup.md): running it, with or without Docker.
 - [Frontend](frontend.md): pages, components, how `/api` reaches the backend.
 - [Project blueprint](project-blueprint.pdf): the design this follows.
-- Journals: [Umang](journals/1024030805-umang/index.md), [Vriti](journals/1024030801-vriti/index.md), [Khushi](journals/1024030809-khushi/index.md), [Shaurya](journals/1024030xxx-shaurya/index.md).
+- Journals: [Umang](journals/1024030805-umang/index.md), [Vriti](journals/1024030801-vriti/index.md), [Khushi](journals/1024030809-khushi/index.md), [Shaurya](journals/1024030800-shaurya/index.md).
 - [Project selection criteria](criteria-for-project-selection.md): the course rubric.
 
 ## Status (14 September 2026)
