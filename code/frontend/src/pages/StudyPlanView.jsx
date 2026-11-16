@@ -68,7 +68,7 @@ export default function StudyPlanView() {
     setReminder(null);
     try {
       const r = await sendStudyReminders(selectedId);
-      const where = r.sent ? `emailed to ${r.email}` : 'not sent (email disabled on the server)';
+      const where = r.sent ? 'emailed to your reminders inbox' : `not sent (${r.reason || 'mail service error'})`;
       setReminder({ ok: r.sent, text: `${r.sessions} session(s) and ${r.deadlines} deadline(s) ${where}.` });
     } catch (err) {
       setReminder({ error: err.message });

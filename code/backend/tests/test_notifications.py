@@ -21,15 +21,18 @@ def test_build_reminder_email_empty():
 
 def test_reminders_route_404_for_unknown_student(client):
     with patch("app.api.routes.notifications.notification_service") as svc:
-        svc.send_study_reminders = AsyncMock(return_value=None)
+        svc.compose_student_reminder = AsyncMock(return_value=None)
         assert client.post("/notifications/reminders/nope").status_code == 404
 
 
 def test_reminders_route_ok(client):
     with patch("app.api.routes.notifications.notification_service") as svc:
-        svc.send_study_reminders = AsyncMock(return_value={
+        svc.compose_student_reminder = AsyncMock(return_value={
             "student_id": "s1", "email": "asha@example.com",
-            "sessions": 2, "deadlines": 1, "sent": True, "reason": None,
+            "sessions": 2, "deadlines": 1,
+            "subject": "Study reminder: 2 session(s), 1 deadline(s)",
+            "message": "Hi Asha,\n...",
         })
         r = client.post("/notifications/reminders/s1")
-    assert r.status_code == 200 and r.json()["sessions"] == 2 and r.json()["sent"] is True
+    assert r.status_code == 200 and r.json()["sessions"] == 2
+    assert "2 session(s)" in r.json()["subject"]

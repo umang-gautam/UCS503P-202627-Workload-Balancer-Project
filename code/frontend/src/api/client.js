@@ -98,4 +98,27 @@ export const triggerRebalance = (body) => request('/agent/rebalance', { method: 
 export const seedDemoData = () => request('/demo/seed', { method: 'POST' });
 
 // ── Notifications ────────────────────────────
-export const sendStudyReminders = (studentId) => request(`/notifications/reminders/${studentId}`, { method: 'POST' });
+// The backend composes the reminder; delivery is client-side via Web3Forms
+// (its free tier only accepts browser requests). The access key is a public
+// key by design, so shipping it in the bundle is safe. Web3Forms emails the
+// reminder to the inbox the key is registered to.
+const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_KEY || '6aacb794-93fb-4d9b-a93d-b48189db46a0';
+
+export const sendStudyReminders = async (studentId) => {
+  const reminder = await request(`/notifications/reminders/${studentId}`, { method: 'POST' });
+  let json = {};
+  try {
+    // FormData (not JSON) — a "simple" request with no CORS preflight, matching
+    // Web3Forms' documented client-side usage.
+    const body = new FormData();
+    body.append('access_key', WEB3FORMS_KEY);
+    body.append('from_name', 'Workload Balancer');
+    body.append('subject', reminder.subject);
+    body.append('message', reminder.message);
+    const res = await fetch('https://api.web3forms.com/submit', { method: 'POST', body });
+    json = await res.json();
+  } catch {
+    return { ...reminder, sent: false, reason: 'Could not reach the mail service.' };
+  }
+  return { ...reminder, sent: json.success === true, reason: json.success ? null : (json.message || 'The mail service rejected the message.') };
+};

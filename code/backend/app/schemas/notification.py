@@ -7,5 +7,5 @@ class ReminderResult(BaseModel):
     email: str
     sessions: int
     deadlines: int
-    sent: bool
-    reason: str | None = None
+    subject: str
+    message: str

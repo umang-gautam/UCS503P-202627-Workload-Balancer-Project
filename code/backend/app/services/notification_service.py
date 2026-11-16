@@ -1,14 +1,14 @@
 """
 Email notifications: study-session reminders and upcoming deadline alerts.
 
-Provider-agnostic SMTP driven by settings (SMTP_HOST/PORT/USER/PASS/FROM/TLS).
-When SMTP_HOST is empty, sending is a no-op so the app still runs with no mail
-server. `build_reminder_email` is a pure function (no I/O) and is unit-tested.
+The backend gathers a student's upcoming sessions/deadlines and composes the
+reminder (subject + body). Delivery happens client-side: the frontend posts the
+composed message to Web3Forms (https://web3forms.com), which emails it to the
+inbox the access key is registered to — no SMTP server needed. Web3Forms' free
+tier only accepts client-side requests, so the send cannot run server-side.
+`build_reminder_email` is a pure function (no I/O) and is unit-tested.
 """
 from datetime import date, timedelta
-from email.message import EmailMessage
-
-import aiosmtplib
 
 from app.core.config import settings
 from app.repositories import (
@@ -61,25 +61,6 @@ def build_reminder_email(student: dict, sessions: list[dict], deadlines: list[di
     return subject, "\n".join(lines)
 
 
-async def _send_email(to_addr: str, subject: str, body: str) -> dict:
-    if not settings.email_enabled:
-        return {"sent": False, "reason": "SMTP not configured"}
-    msg = EmailMessage()
-    msg["From"] = settings.smtp_from
-    msg["To"] = to_addr
-    msg["Subject"] = subject
-    msg.set_content(body)
-    await aiosmtplib.send(
-        msg,
-        hostname=settings.smtp_host,
-        port=settings.smtp_port,
-        username=settings.smtp_user or None,
-        password=settings.smtp_pass or None,
-        start_tls=settings.smtp_tls,
-    )
-    return {"sent": True, "reason": None}
-
-
 async def _gather_upcoming(student_id: str, today: date, horizon: int) -> tuple[list[dict], list[dict]]:
     cutoff = today + timedelta(days=horizon)
 
@@ -111,10 +92,11 @@ async def _gather_upcoming(student_id: str, today: date, horizon: int) -> tuple[
     return sessions, deadlines
 
 
-async def send_study_reminders(student_id: str, horizon: int | None = None) -> dict | None:
-    """Orchestrate: gather the student's upcoming items and email them.
+async def compose_student_reminder(student_id: str, horizon: int | None = None) -> dict | None:
+    """Gather the student's upcoming items and compose the reminder email.
 
-    Returns None if the student does not exist.
+    Returns the composed subject + body plus item counts. The frontend delivers
+    it via Web3Forms. Returns None if the student does not exist.
     """
     horizon = horizon or settings.reminder_horizon_days
     today = date.today()
@@ -123,11 +105,11 @@ async def send_study_reminders(student_id: str, horizon: int | None = None) -> d
         return None
     sessions, deadlines = await _gather_upcoming(student_id, today, horizon)
     subject, body = build_reminder_email(student, sessions, deadlines)
-    result = await _send_email(student["email"], subject, body)
     return {
         "student_id": student_id,
         "email": student["email"],
         "sessions": len(sessions),
         "deadlines": len(deadlines),
-        **result,
+        "subject": subject,
+        "message": body,
     }
